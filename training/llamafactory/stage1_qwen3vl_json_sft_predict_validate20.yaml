@@ -1,0 +1,45 @@
+### Generation validation for the Stage 1 Qwen3-VL LoRA SFT adapter.
+
+### model
+model_name_or_path: /home/dellpro2/zhongwen/nuscenes-devkit/models/Qwen3-VL-2B-Instruct
+adapter_name_or_path: /home/dellpro2/zhongwen/nuscenes-devkit/training/outputs/llamafactory/stage1_qwen3vl_json_sft_final
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: false
+do_eval: false
+do_predict: true
+finetuning_type: lora
+
+### dataset
+dataset_dir: /home/dellpro2/zhongwen/nuscenes-devkit/training/llamafactory/data
+dataset: nurisk_validation
+eval_dataset: nurisk_validation
+template: qwen3_vl_nothink
+cutoff_len: 3072
+max_samples: 20
+preprocessing_num_workers: 1
+dataloader_num_workers: 0
+video_maxlen: 2
+video_fps: 1.0
+video_max_pixels: 4096
+video_min_pixels: 4096
+
+### output
+output_dir: /home/dellpro2/zhongwen/nuscenes-devkit/training/outputs/llamafactory/stage1_qwen3vl_json_sft_predict_validate20
+overwrite_output_dir: true
+predict_with_generate: true
+per_device_eval_batch_size: 1
+report_to: none
+
+### generation
+max_new_tokens: 2048
+do_sample: false
+temperature: 1.0
+top_p: 1.0
+
+### runtime
+bf16: false
+fp16: true
+ddp_timeout: 180000000

@@ -1,0 +1,110 @@
+qwen3_vl:
+  model_name_or_path: models/Qwen3-VL-2B-Instruct
+  adapter_name_or_path: training/outputs/stage3_risk_latent_warmup/final/qwen_lora_or_model
+  adapter_is_trainable: true
+  local_files_only: true
+  device_map: auto
+  dtype: float16
+
+model:
+  pretrained_model_name: Salesforce/blip2-opt-2.7b
+  qformer_checkpoint_path: training/pretrained/blip2_qformer/Salesforce_blip2-opt-2.7b/qformer_query.pt
+  num_views: 6
+  num_frames: 5
+  use_camera_embedding: true
+  use_temporal_embedding: true
+  freeze_qformer: false
+  freeze_query_tokens: false
+
+risk_latent:
+  answer_loss_weight: 0.0
+  risk_loss_weight: 1.0
+  current_risk_loss_weight: 0.8
+  future_risk_loss_weight: 1.0
+  trend_loss_weight: 0.4
+  action_loss_weight: 0.5
+  lateral_action_loss_weight: 0.3
+  speed_loss_weight: 0.2
+  deceleration_loss_weight: 0.2
+  current_ttc_loss_weight: 0.2
+  current_dtc_loss_weight: 0.2
+  future_ttc_loss_weight: 0.3
+  future_dtc_loss_weight: 0.3
+  future_ttc_vector_loss_weight: -1.0
+  future_dtc_vector_loss_weight: -1.0
+  lateral_offset_loss_weight: 0.1
+  ttc_loss_mode: finite_log
+  ttc_finite_loss_weight: 0.1
+  risk_head_source: recurrent_cot
+  enable_recurrent_latent_cot: true
+  enable_latent_cot: false
+  num_cot_steps: 4
+  cot_loss_weight: 0.0
+  action_labels:
+    - maintain_speed
+    - accelerate
+    - mild_decelerate
+    - moderate_decelerate
+    - strong_decelerate
+    - stop
+    - stopping
+  lateral_action_labels:
+    - maintain_lane
+    - lateral_shift_left
+    - lateral_shift_right
+
+data:
+  answer_label_policy: full
+  train_datasets:
+    - json: data/sets/nuscenes_full/nurisk_style/dataset_splits/train.json
+      vqa_root: data/sets/nuscenes_full/nurisk_style
+    - json: data/sets/waymo/nurisk_style/dataset_splits/train.json
+      vqa_root: data/sets/waymo/nurisk_style
+  validation_datasets:
+    - json: data/sets/nuscenes_full/nurisk_style/dataset_splits/validation.json
+      vqa_root: data/sets/nuscenes_full/nurisk_style
+    - json: data/sets/waymo/nurisk_style/dataset_splits/validation.json
+      vqa_root: data/sets/waymo/nurisk_style
+
+video_processor:
+  fps: 1.0
+  raw_fps: 2.0
+  reader_backend: torchvision
+
+training:
+  output_dir: training/outputs/stage4a_recurrent_latent_cot_risk
+  risk_adapter_name_or_path: training/outputs/stage3_risk_latent_warmup/final
+  train_llm: lora_only
+  freeze_video_encoder: true
+  train_qformer: false
+  train_projector: false
+  train_risk_latents: true
+  train_risk_aux_heads: true
+  train_cot_decoder: false
+  compute_json_loss: false
+  compute_risk_loss: true
+  compute_cot_loss: false
+  save_qwen_adapter: true
+  batch_size: 1
+  eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 8.0e-5
+  lora_learning_rate: 1.0e-5
+  weight_decay: 0.01
+  num_epochs: 1
+  max_steps: null
+  max_train_samples: null
+  max_validation_samples: 800
+  eval_max_batches: 20
+  log_every: 10
+  save_every: 500
+  eval_every: 500
+  save_total_limit: 3
+  max_question_length: 1024
+  max_answer_length: 1024
+  max_cot_step_length: 128
+  fp16: true
+  bf16: false
+  gradient_checkpointing: false
+  report_to: []
+  random_seed: 42

@@ -1,0 +1,56 @@
+### LLaMA-Factory Qwen3-VL LoRA SFT low-memory 100-sample run.
+### Use this only for checking whether GPU training can run while memory is tight.
+
+### model
+model_name_or_path: /home/dellpro2/zhongwen/nuscenes-devkit/models/Qwen3-VL-2B-Instruct
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: all
+
+### dataset
+dataset_dir: /home/dellpro2/zhongwen/nuscenes-devkit/training/llamafactory/data
+dataset: nurisk_train
+eval_dataset: nurisk_validation
+template: qwen3_vl_nothink
+cutoff_len: 3072
+max_samples: 100
+preprocessing_num_workers: 4
+dataloader_num_workers: 0
+video_maxlen: 2
+video_fps: 1.0
+video_max_pixels: 4096
+video_min_pixels: 4096
+
+### output
+output_dir: /home/dellpro2/zhongwen/nuscenes-devkit/training/outputs/llamafactory/stage1_qwen3vl_json_sft_100sample
+logging_steps: 1
+save_steps: 50
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-5
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_steps: 1
+bf16: false
+fp16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+### eval
+do_eval: true
+eval_strategy: steps
+eval_steps: 50
